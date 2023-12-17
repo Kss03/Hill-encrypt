@@ -53,6 +53,12 @@ int ** keyEncGenerator(int size) {
 
 int determinant ( int **matrix, int size) {
     // liczymy wyznacznik dla macierzy
+    if (size == 2) {
+        int detA;
+
+        detA = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+        return detA;
+    }
     if (size == 3) {
         int detA = 0;
 
@@ -81,9 +87,9 @@ int determinant ( int **matrix, int size) {
         int detA;
 
         int smallerSize = size - 1;
-        int ** smallerMatrix = (int**)malloc(size * sizeof(int*));
+        int ** smallerMatrix = (int**)malloc(smallerSize * sizeof(int*));
         for (int i = 0; i < smallerSize; i++) {
-            smallerMatrix[i] = (int*)malloc(size * sizeof(int));
+            smallerMatrix[i] = (int*)malloc(smallerSize * sizeof(int));
         }
 
         //deleted cols
