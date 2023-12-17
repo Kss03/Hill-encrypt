@@ -1,12 +1,11 @@
 
 
-//struct encryptStructure {
-//    int alphabetLength;
-//    char letterKeys;
-//    int encryptKey;
-//    double decryptKey;
-//
-//};
+struct encryptStructure {
+    int alphabetLength;
+    char letterKeys;
+    int encryptKey;
+    double decryptKey;
+};
 
 const int alphLength = 26;
 

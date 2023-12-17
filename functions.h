@@ -82,6 +82,8 @@ int determinant ( int **matrix, int size) {
 
         return detA;
     }
+
+    // liczymy wyznacznik metoda Cramera
     if (size > 3) {
         int detOut = 0;
         int detA;
@@ -120,4 +122,137 @@ int determinant ( int **matrix, int size) {
         free(smallerMatrix);
         return detOut;
     }
+}
+
+int inverseDeterminant (int **matrix, int size) {
+    //jezeli wyznacznik == 0 zmieniamy macierz
+    int det = determinant(matrix, size);
+    if (det == 0) return 0;
+
+    // unikamy ułamków w macierzy odwrotnej poprzez użycie odwrotności wyznacznika na mod26
+    // trzeba dla dezsyfrowania
+    int inverseDet;
+    for (int i = 0; i < alphLength; i++) {
+
+        int detInv = (abs(det) * i) % 26;
+        if ( detInv == 1) {
+            inverseDet = i;
+        }
+    }
+    return inverseDet;
+}
+
+//funkcja liczy macierz odwrotną
+int **algebraicComplementMatrix (int **matrix, int size) {
+
+    int ** complementMatrix = (int**)malloc(size * sizeof(int*));
+    for (int i = 0; i < size; i++) {
+        complementMatrix[i] = (int*)malloc(size * sizeof(int));
+    }
+
+    int smallerSize = size - 1;
+    //pamiec do macierzy dopelmien algebraicznych
+    int ** matrixB = (int**)malloc((smallerSize) * sizeof(int*));
+    for (int i = 0; i < smallerSize; i++) {
+        matrixB[i] = (int*)malloc(smallerSize * sizeof(int));
+    }
+    printf_s("\n######## dopełnienia algebraiczne #########\n");
+    for (int i = 0; i < size; i++) {
+
+        for(int j = 0; j < size; j++) {
+            //dopelnienie algebraiczne
+            int negativePositive = (int)pow((-1), ((i + 1) + (j + 1)));
+
+            for( int k = 0; k < smallerSize; k++) {
+                for( int l = 0; l < smallerSize; l++) {
+
+                    if (k < i) {
+                        if (l < j) matrixB[k][l] = matrix[k][l];
+                        else if (l >= j) matrixB[k][l] = matrix[k][l + 1];
+                    } else if (k >= i) {
+                        if (l < j) matrixB[k][l] = matrix[k + 1][l];
+                        else if (l >= j) matrixB[k][l] = matrix[k + 1][l + 1];
+                    }
+
+                }
+            }
+
+            //liczymy wyznacznik dla wszystkich dopełnień macierzy odwrotnej
+            complementMatrix[i][j] = negativePositive * determinant(matrixB, smallerSize);
+            // modulo dla każdego znaczenia macierzy ( unikamy liczb ujemnych poprzez dodawanie do niej znaczenie modulo
+            if (complementMatrix[i][j] < 0) complementMatrix[i][j] = (complementMatrix[i][j] % 26) + 26;
+            else complementMatrix[i][j] = complementMatrix[i][j] % 26;
+
+            printf_s("%d * ", complementMatrix[i][j]);
+        }
+        printf_s("\n");
+    }
+    free(matrixB);
+    return complementMatrix;
+}
+
+int ** transposition (int **matrix, int size) {
+    int newMatrix[size][size];
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            // robimy transponowanie
+            newMatrix[i][j] = matrix[j][i];
+        }
+    }
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            // robimy transponowanie
+            matrix[i][j] = newMatrix[i][j];
+        }
+    }
+    return matrix;
+}
+
+int **inverseMatrix (int **matrix, int size, int inverseDet) {
+    int **invMatrix;
+    invMatrix = algebraicComplementMatrix(matrix, size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            invMatrix[i][j] = (inverseDet * invMatrix[i][j]) % 26;
+        }
+    }
+    transposition(invMatrix, size);
+    return invMatrix;
+}
+
+int **keysGenerator(int size) {
+    int inverseDet = 0;
+    int ** keyEnc;
+    int ** keyDec;
+
+    do {
+        keyEnc = keyEncGenerator(size);
+        inverseDet = inverseDeterminant(keyEnc, size);
+    }
+    while (inverseDet == 0);
+    printf_s("\n****  %d ****\n", inverseDet);
+
+    //dalej znajdziemy macierz dopełnień algebraicznych
+    keyDec = inverseMatrix(keyEnc, size, inverseDet);
+
+    printf_s("\n############## keyEnc ###############\n");
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            printf_s("+%d+", keyEnc[i][j]);
+        }
+        printf_s("\n");
+    }
+    printf_s("\n#######################################\n");
+
+    printf_s("\n############## keyDec ###############\n");
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            printf_s("+%d+", keyDec[i][j]);
+        }
+        printf_s("\n");
+    }
+    printf_s("\n#######################################\n");
+
+    free(keyEnc);
+    free(keyDec);
 }
