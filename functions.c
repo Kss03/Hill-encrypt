@@ -7,13 +7,14 @@
 
 
 int letToNum(char letter) {
+    printf_s("\n%c", letter);
     for (int i = 0; i < alphLength; i++) {
         if (letter == letKeys[i][0] || letter == letKeys[i][1]) {
             return letKeys[i][2];
         }
     }
-    printf_s("\nPlease, provide correct data\n");
-    return -1;
+//    printf_s("\nPlease, provide the text\n");
+    return 0;
 }
 
 char numToLet(int num) {
@@ -22,11 +23,12 @@ char numToLet(int num) {
             return letKeys[i][0];
         }
     }
-    printf_s("\nPlease, provide correct data\n");
-    return -1;
+//    printf_s("\nPlease, provide correct data\n");
+    return 0;
 }
 
 int ** keyEncGenerator(int size) {
+
     // с помощью malloc выделяем кусок памяти => кол-во элементов * размер типа int
     // za pomocą malloc przydzielamy pamięć dla lańcuchu => ilość elementów * wymiar typu "int"
     int ** keyEnc = (int**)malloc(size * sizeof(int*));
@@ -48,6 +50,7 @@ int ** keyEncGenerator(int size) {
     // to wszystko dla tego, żeby zwrocić z funkcji tą macierz
     // ps. nie zapominamy o zwolnieniu pamięci za pomocą free(arrName)
     // ps. не забываем потом очистить память вручную с помощью free(arrName); как по пользуемся
+
     return keyEnc;
 }
 
@@ -127,16 +130,25 @@ int determinant ( int **matrix, int size) {
 int inverseDeterminant (int **matrix, int size) {
     //jezeli wyznacznik == 0 zmieniamy macierz
     int det = determinant(matrix, size);
-    if (det == 0) return 0;
+    if (det <= 0) return 0;
+
 
     // unikamy ułamków w macierzy odwrotnej poprzez użycie odwrotności wyznacznika na mod26
     // trzeba dla dezsyfrowania
-    int inverseDet;
+    int inverseDet = 0;
     for (int i = 0; i < alphLength; i++) {
-
-        int detInv = (abs(det) * i) % 26;
+        int detInv;
+//        if (det < 0) {
+//            inverseDet = 0;
+//            break;
+//        }
+//        if (det > 0) {
+            detInv = (abs(det) * i) % 26;
+//        }
         if ( detInv == 1) {
             inverseDet = i;
+            printf_s("\nDET: %d\n", det);
+            break;
         }
     }
     return inverseDet;
@@ -220,39 +232,39 @@ int **inverseMatrix (int **matrix, int size, int inverseDet) {
     return invMatrix;
 }
 
-int **keysGenerator(int size) {
-    int inverseDet = 0;
-    int ** keyEnc;
-    int ** keyDec;
-
-    do {
-        keyEnc = keyEncGenerator(size);
-        inverseDet = inverseDeterminant(keyEnc, size);
-    }
-    while (inverseDet == 0);
-    printf_s("\n****  %d ****\n", inverseDet);
-
-    //dalej znajdziemy macierz dopełnień algebraicznych
-    keyDec = inverseMatrix(keyEnc, size, inverseDet);
-
-    printf_s("\n############## keyEnc ###############\n");
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            printf_s("+%d+", keyEnc[i][j]);
-        }
-        printf_s("\n");
-    }
-    printf_s("\n#######################################\n");
-
-    printf_s("\n############## keyDec ###############\n");
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            printf_s("+%d+", keyDec[i][j]);
-        }
-        printf_s("\n");
-    }
-    printf_s("\n#######################################\n");
-
-    free(keyEnc);
-    free(keyDec);
-}
+//int **keysGenerator(int size) {
+//    int inverseDet = 0;
+//    int ** keyEnc;
+//    int ** keyDec;
+//
+//    do {
+//        keyEnc = keyEncGenerator(size);
+//        inverseDet = inverseDeterminant(keyEnc, size);
+//    }
+//    while (inverseDet == 0);
+//    printf_s("\n****  %d ****\n", inverseDet);
+//
+//    //dalej znajdziemy macierz dopełnień algebraicznych
+//    keyDec = inverseMatrix(keyEnc, size, inverseDet);
+//
+//    printf_s("\n############## keyEnc ###############\n");
+//    for (int i = 0; i < size; i++) {
+//        for (int j = 0; j < size; j++) {
+//            printf_s("+%d+", keyEnc[i][j]);
+//        }
+//        printf_s("\n");
+//    }
+//    printf_s("\n#######################################\n");
+//
+//    printf_s("\n############## keyDec ###############\n");
+//    for (int i = 0; i < size; i++) {
+//        for (int j = 0; j < size; j++) {
+//            printf_s("+%d+", keyDec[i][j]);
+//        }
+//        printf_s("\n");
+//    }
+//    printf_s("\n#######################################\n");
+//
+//    free(keyEnc);
+//    free(keyDec);
+//}

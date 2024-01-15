@@ -1,4 +1,5 @@
 
+#define TEXTBUFFER 50
 
 struct encryptStructure {
     int alphabetLength;
@@ -37,3 +38,33 @@ const char letKeys[26][3] = {
 	{'Y', 'y', 24},
 	{'Z', 'z', 25},
 };
+
+
+struct InputData {
+    int length;
+    char text[TEXTBUFFER];
+    char cryptedText[TEXTBUFFER];
+};
+
+struct TextKeys {
+    int size;
+    int ** encryptKey;
+    int ** decryptKey;
+};
+
+struct SessionData {
+    struct InputData inputData;
+    struct TextKeys keys;
+    int *textOnNum;
+    char *decodedText;
+};
+
+int letToNum(char letter);
+char numToLet(int num);
+int ** keyEncGenerator(int size);
+int determinant ( int **matrix, int size);
+int inverseDeterminant (int **matrix, int size);
+int **algebraicComplementMatrix (int **matrix, int size);
+int ** transposition (int **matrix, int size);
+int **inverseMatrix (int **matrix, int size, int inverseDet);
+//int **keysGenerator(int size);
