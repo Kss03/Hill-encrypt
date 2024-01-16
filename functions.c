@@ -3,22 +3,23 @@
 #include "variables.h"
 #include <time.h>
 #include <math.h>
+#include <locale.h>
 
 
 
 int letToNum(char letter) {
-    printf_s("\n%c", letter);
-    for (int i = 0; i < alphLength; i++) {
+//    printf_s("\n%c", letter);
+    for (int i = 0; i < ALPHLENGTH; i++) {
         if (letter == letKeys[i][0] || letter == letKeys[i][1]) {
             return letKeys[i][2];
         }
     }
 //    printf_s("\nPlease, provide the text\n");
-    return 0;
+    return (ALPHLENGTH - 1);
 }
 
 char numToLet(int num) {
-    for (int i = 0; i < alphLength; i++) {
+    for (int i = 0; i < ALPHLENGTH; i++) {
         if (num == letKeys[i][2]) {
             return letKeys[i][0];
         }
@@ -42,7 +43,7 @@ int ** keyEncGenerator(int size) {
         for (int j = 0; j < size; j++) {
             // wypełniamy lańcuch znaczeniami
 
-            int randFrom0to25 = rand() % 26;
+            int randFrom0to25 = rand() % ALPHLENGTH;
             keyEnc[i][j] = randFrom0to25;
         }
     }
@@ -133,17 +134,17 @@ int inverseDeterminant (int **matrix, int size) {
     if (det <= 0) return 0;
 
 
-    // unikamy ułamków w macierzy odwrotnej poprzez użycie odwrotności wyznacznika na mod26
+    // unikamy ułamków w macierzy odwrotnej poprzez użycie odwrotności wyznacznika na modALPHLENGTH
     // trzeba dla dezsyfrowania
     int inverseDet = 0;
-    for (int i = 0; i < alphLength; i++) {
+    for (int i = 0; i < ALPHLENGTH; i++) {
         int detInv;
 //        if (det < 0) {
 //            inverseDet = 0;
 //            break;
 //        }
 //        if (det > 0) {
-            detInv = (abs(det) * i) % 26;
+            detInv = (abs(det) * i) % ALPHLENGTH;
 //        }
         if ( detInv == 1) {
             inverseDet = i;
@@ -192,8 +193,8 @@ int **algebraicComplementMatrix (int **matrix, int size) {
             //liczymy wyznacznik dla wszystkich dopełnień macierzy odwrotnej
             complementMatrix[i][j] = negativePositive * determinant(matrixB, smallerSize);
             // modulo dla każdego znaczenia macierzy ( unikamy liczb ujemnych poprzez dodawanie do niej znaczenie modulo
-            if (complementMatrix[i][j] < 0) complementMatrix[i][j] = (complementMatrix[i][j] % 26) + 26;
-            else complementMatrix[i][j] = complementMatrix[i][j] % 26;
+            if (complementMatrix[i][j] < 0) complementMatrix[i][j] = (complementMatrix[i][j] % ALPHLENGTH) + ALPHLENGTH;
+            else complementMatrix[i][j] = complementMatrix[i][j] % ALPHLENGTH;
 
             printf_s("%d * ", complementMatrix[i][j]);
         }
@@ -225,46 +226,9 @@ int **inverseMatrix (int **matrix, int size, int inverseDet) {
     invMatrix = algebraicComplementMatrix(matrix, size);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            invMatrix[i][j] = (inverseDet * invMatrix[i][j]) % 26;
+            invMatrix[i][j] = (inverseDet * invMatrix[i][j]) % ALPHLENGTH;
         }
     }
     transposition(invMatrix, size);
     return invMatrix;
 }
-
-//int **keysGenerator(int size) {
-//    int inverseDet = 0;
-//    int ** keyEnc;
-//    int ** keyDec;
-//
-//    do {
-//        keyEnc = keyEncGenerator(size);
-//        inverseDet = inverseDeterminant(keyEnc, size);
-//    }
-//    while (inverseDet == 0);
-//    printf_s("\n****  %d ****\n", inverseDet);
-//
-//    //dalej znajdziemy macierz dopełnień algebraicznych
-//    keyDec = inverseMatrix(keyEnc, size, inverseDet);
-//
-//    printf_s("\n############## keyEnc ###############\n");
-//    for (int i = 0; i < size; i++) {
-//        for (int j = 0; j < size; j++) {
-//            printf_s("+%d+", keyEnc[i][j]);
-//        }
-//        printf_s("\n");
-//    }
-//    printf_s("\n#######################################\n");
-//
-//    printf_s("\n############## keyDec ###############\n");
-//    for (int i = 0; i < size; i++) {
-//        for (int j = 0; j < size; j++) {
-//            printf_s("+%d+", keyDec[i][j]);
-//        }
-//        printf_s("\n");
-//    }
-//    printf_s("\n#######################################\n");
-//
-//    free(keyEnc);
-//    free(keyDec);
-//}

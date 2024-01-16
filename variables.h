@@ -1,16 +1,10 @@
 
-#define TEXTBUFFER 50
+#define TEXTBUFFER 250
+#define ALPHLENGTH 27
 
-struct encryptStructure {
-    int alphabetLength;
-    char letterKeys;
-    int encryptKey;
-    double decryptKey;
-};
+//const int alphLength = 30;
 
-const int alphLength = 26;
-
-const char letKeys[26][3] = {
+const char letKeys[27][3] = {
 	{'A', 'a', 0},
 	{'B', 'b', 1},
 	{'C', 'c', 2},
@@ -37,26 +31,29 @@ const char letKeys[26][3] = {
 	{'X', 'x', 23},
 	{'Y', 'y', 24},
 	{'Z', 'z', 25},
+    {' ', ' ', 26}
 };
 
 
 struct InputData {
     int length;
     char text[TEXTBUFFER];
-    char cryptedText[TEXTBUFFER];
 };
 
 struct TextKeys {
     int size;
     int ** encryptKey;
     int ** decryptKey;
+    char * encryptKeyText;
 };
 
 struct SessionData {
     struct InputData inputData;
     struct TextKeys keys;
     int *textOnNum;
+    int textOnNumLength;
     char *decodedText;
+    char *codedText;
 };
 
 int letToNum(char letter);
