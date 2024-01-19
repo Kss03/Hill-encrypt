@@ -1,0 +1,239 @@
+#include "cryptStruct.h"
+
+void free2D(int **matrix, int size) {
+  for( int i = 0; i < size; i++) free(matrix[i]);
+  free(matrix);
+}
+void printText(char *name, char *text, int length) {
+  puts("\n*******************");
+  printf_s("%s:: ", name);
+  for (int i = 0; i < length; i++) printf_s("%c", text[i]);
+  printf_s("\n*******************");
+}
+void printMatrix(char *name, int **matrix, int size) {
+  printf_s("\n***************** %s ******************\n", name);
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      printf_s("| %d ", matrix[i][j]);
+    }
+    printf_s("\n");
+  }
+}
+
+int menu () {
+  char input[TEXTBUFFER];
+  printf_s("\nCo chcialbys zrobic?");
+  printf_s("\nenc - zaszyfrowac, dec - deszyfrowac, exit - wyjdz\n");
+  gets(input);
+
+  if (strcoll(input, "enc") == 0) return 1;
+  else if (strcoll(input, "dec") == 0) return 2;
+  else if (strcoll(input, "exit") == 0) return 0;
+}
+char * typeMessage (char *message) {
+  printf_s(message);
+  char *input = malloc(TEXTBUFFER * sizeof(char));
+  gets(input);
+  return input;
+}
+int typeKey () {
+  char wprowadzKlucz[] = "\nWymiar macierzy dla klucza (od 3 do 7): ";
+  char inp[TEXTBUFFER];
+  int output;
+  printf_s(wprowadzKlucz);
+  gets(inp);
+  output = (int)strtol(inp, NULL, 10);
+  return output;
+}
+
+//dLugośc tekstu dopasowana do wymiaru klucza
+int textLength(char *text, int size) {
+  int len = (int)strlen(text);
+  if (len % size == 0) return len;
+  len = ((int)len / (int)size) * size + size;
+  return len;
+}
+int letToNum(char letter) {
+  for (int i = 0; i < ALPHLENGTH; i++) {
+    if (letter == ALPHKEYS[i][0] || letter == ALPHKEYS[i][1]) return ALPHKEYS[i][2];
+  }
+  return (ALPHLENGTH-1);
+}
+char numToLet(int letKey) {
+  for (int i = 0; i < ALPHLENGTH; i++) {
+    if (letKey == ALPHKEYS[i][2]) {
+      return ALPHKEYS[i][0];
+    }
+  }
+  return (ALPHKEYS[ALPHLENGTH-1][0]);
+}
+int * convertTextToNum(char *text, int length) {
+  int *textNum = malloc(length * sizeof(int));
+  for (int i = 0; i < length; i++) textNum[i] = letToNum(text[i]);
+  return textNum;
+}
+char * convertNumToText(int *numArr, int length) {
+  char *text = malloc(length * sizeof(int));
+  for (int i = 0; i < length; i++) text[i] = numToLet(numArr[i]);
+  return text;
+}
+int * convertMatrixToChain(int **key, int size) {
+  int *chain = malloc(size * size * sizeof(int));
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) chain[i * size + j] = key[i][j];
+  }
+  return chain;
+}
+int ** convertChainToMatrix(int *chain, int size) {
+  int **matrix = malloc(size * size * sizeof(int));
+  matrix = (int**)malloc(size * sizeof(int*));
+  for (int i = 0; i < size; i++) {
+    matrix[i] = (int*)malloc(size * sizeof(int));
+    for( int j = 0; j < size; j++) {
+      matrix[i][j] = chain[i * size + j];
+    }
+  }
+  return matrix;
+}
+
+// funkcja dla szufrowania/deszyfrowania tekstu
+int * textCrypter(int **key, int keySize, int *inpText, int textLength) {
+  int count = ceil((double)textLength / keySize);
+  int letterNum = 0;
+  int arr[keySize];
+  int *text = malloc(textLength * sizeof(int));
+
+  for(int i = 0; i < count; i++) {
+    for (int j = 0; j < keySize; j++) {
+      for (int x = 0; x < keySize; x++) {
+        letterNum = letterNum + (inpText[i * keySize + x] * key[j][x]);
+      }
+      arr[j] = letterNum % ALPHLENGTH;
+      letterNum = 0;
+    }
+    for (int j = 0; j < keySize; j++) {
+      text[i * keySize + j] = arr[j];
+    }
+  }
+  return text;
+}
+int ** matrixGenerator(int size) {
+  int **key;
+  int random;
+  srand(time(NULL));
+  key = (int**)malloc(size * sizeof(int*));
+  for (int i = 0; i < size; i++) {
+    key[i] = (int*)malloc(size * sizeof(int));
+    for( int j = 0; j < size; j++) {
+
+      random = rand() % ALPHLENGTH;
+      key[i][j] = random;
+    }
+  }
+
+  return key;
+}
+int determinant(int **key, int size) {
+  // liczymy wyznacznik dla macierzy
+  if (size == 2) {
+    int detA;
+    detA = key[0][0] * key[1][1] - key[0][1] * key[1][0];
+    return detA;
+  }
+  if (size == 3) {
+    int detA = 0;
+
+    for( int i = 0; i < size; i++ ) {
+      int diagonal = 1;
+      for ( int j = 0; j < size; j++) {
+        int cell = (i + j) % size;
+        diagonal = diagonal * key[cell][j];
+      }
+      detA = detA + diagonal;
+    }
+
+    for( int i = 0; i < size; i++ ) {
+      int diagonal = 1;
+      for ( int j = 0; j < size; j++) {
+        int cell = (i + j) % size;
+        diagonal = diagonal * key[cell][size - (j+1)];
+      }
+      detA = detA - diagonal;
+    }
+    return detA;
+  }
+
+  // liczymy wyznacznik metoda Cramera
+  if (size > 3) {
+    int detOut = 0;
+    int smallerSize = size - 1;
+    int ** smallerMatrix = (int**)malloc(smallerSize * sizeof(int*));
+    for (int i = 0; i < smallerSize; i++) {
+      smallerMatrix[i] = (int*)malloc(smallerSize * sizeof(int));
+    }
+
+    //deleted cols
+    for (int i = 0; i < size; i++) {
+      //dopelnienie algebraiczne
+      int complement = key[0][i] * (int)pow((-1), (1 + (i + 1)));
+      //rows
+      for (int j = 0; j < smallerSize; j++) {
+        //cols
+        for (int k = 0; k < smallerSize; k++) {
+          if (k < i) {
+            smallerMatrix[j][k] = key[j + 1][k];
+          } else if (k >= i) {
+            smallerMatrix[j][k] = key[j + 1][k + 1];
+          }
+        }
+      }
+      detOut = detOut + (complement * determinant(smallerMatrix, smallerSize));
+    }
+
+    //zwalniamy pamiec
+    free2D(smallerMatrix, smallerSize);
+    return detOut;
+  }
+}
+int inverseDeterminant(int **key, int size) {
+  int det = determinant(key, size);
+  if (det <= 0) return 0;
+
+  // unikamy ułamków w macierzy odwrotnej poprzez użycie odwrotności wyznacznika na mod(ALPHLENGTH)
+  // trzeba dla dezsyfrowania
+  int inverseDet = 0;
+  for (int i = 0; i < ALPHLENGTH; i++) {
+    int detInv;
+    detInv = (abs(det) * i) % ALPHLENGTH;
+    if ( detInv == 1) {
+      inverseDet = i;
+      break;
+    }
+  }
+  return inverseDet;
+}
+int ** keyGenerator(int size) {
+  int inverseDet = 0;
+  int **key;
+  do {
+    key = matrixGenerator(size);
+    inverseDet = inverseDeterminant(key, size);
+  }
+  while(inverseDet == 0);
+  return key;
+}
+
+void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *name) {
+  int let;
+  FILE *file = fopen(name, "w");
+  for (int i = 0; i < textLength; i++) {
+    let = (int)text[i];
+    fprintf_s(file, &let);
+  }
+  fprintf_s(file, "\n");
+  for (int i = 0; i < (keySize * keySize); i++) {
+    let = (int)key[i];
+    fprintf_s(file, &let);
+  }
+  fclose(file);
+}
