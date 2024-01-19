@@ -96,6 +96,7 @@ int ** convertChainToMatrix(int *chain, int size) {
   return matrix;
 }
 
+
 // funkcja dla szufrowania/deszyfrowania tekstu
 int * textCrypter(int **key, int keySize, int *inpText, int textLength) {
   int count = ceil((double)textLength / keySize);
@@ -222,6 +223,78 @@ int ** keyGenerator(int size) {
   while(inverseDet == 0);
   return key;
 }
+//funkcja liczy macierz odwrotną
+int **algebraicComplementMatrix (int **matrix, int size) {
+  int ** complementMatrix = (int**)malloc(size * sizeof(int*));
+  for (int i = 0; i < size; i++) {
+    complementMatrix[i] = (int*)malloc(size * sizeof(int));
+  }
+
+  int smallerSize = size - 1;
+  //pamiec do macierzy dopelmien algebraicznych
+  int ** matrixB = (int**)malloc((smallerSize) * sizeof(int*));
+  for (int i = 0; i < smallerSize; i++) {
+    matrixB[i] = (int*)malloc(smallerSize * sizeof(int));
+  }
+
+  for (int i = 0; i < size; i++) {
+
+    for(int j = 0; j < size; j++) {
+      //dopelnienie algebraiczne
+      int negativePositive = (int)pow((-1), ((i + 1) + (j + 1)));
+
+      for( int k = 0; k < smallerSize; k++) {
+        for( int l = 0; l < smallerSize; l++) {
+
+          if (k < i) {
+            if (l < j) matrixB[k][l] = matrix[k][l];
+            else if (l >= j) matrixB[k][l] = matrix[k][l + 1];
+          } else if (k >= i) {
+            if (l < j) matrixB[k][l] = matrix[k + 1][l];
+            else if (l >= j) matrixB[k][l] = matrix[k + 1][l + 1];
+          }
+
+        }
+      }
+
+      //liczymy wyznacznik dla wszystkich dopełnień macierzy odwrotnej
+      complementMatrix[i][j] = negativePositive * determinant(matrixB, smallerSize);
+      // modulo dla każdego znaczenia macierzy ( unikamy liczb ujemnych poprzez dodawanie do niej znaczenie modulo
+      if (complementMatrix[i][j] < 0) complementMatrix[i][j] = (complementMatrix[i][j] % ALPHLENGTH) + ALPHLENGTH;
+      else complementMatrix[i][j] = complementMatrix[i][j] % ALPHLENGTH;
+    }
+  }
+  free2D(matrixB, smallerSize);
+  return complementMatrix;
+}
+int ** transposition (int **matrix, int size) {
+  int newMatrix[size][size];
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      // robimy transponowanie
+      newMatrix[i][j] = matrix[j][i];
+    }
+  }
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      // robimy transponowanie
+      matrix[i][j] = newMatrix[i][j];
+    }
+  }
+  return matrix;
+}
+int **findDecryptKey(int **key, int size) {
+  int ** decKey;
+  int inverseDet = inverseDeterminant(key, size);
+  decKey = algebraicComplementMatrix(key, size);
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      decKey[i][j] = (inverseDet * decKey[i][j]) % ALPHLENGTH;
+    }
+  }
+  transposition(decKey, size);
+  return decKey;
+}
 
 void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *name) {
   int let;
@@ -236,4 +309,14 @@ void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *
     fprintf_s(file, &let);
   }
   fclose(file);
+}
+int toReadFile (char *fileName, char *text, char *key) {
+  char line[TEXTBUFFER];
+  FILE *file = fopen(fileName, "r");
+  if (!file) return 0;
+  fgets(text, TEXTBUFFER, file);
+  text[strlen(text) - 1] = 0;
+  fgets(key, TEXTBUFFER, file);
+  fclose(file);
+  return 1;
 }

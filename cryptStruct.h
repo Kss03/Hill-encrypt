@@ -97,6 +97,11 @@ int ** matrixGenerator(int size);
 int determinant(int **key, int size);
 int inverseDeterminant(int **key, int size);
 int ** keyGenerator(int size);
+//funkcja liczy macierz odwrotną
+int **algebraicComplementMatrix (int **matrix, int size);
+int ** transposition (int **matrix, int size);
+int **findDecryptKey(int **key, int size);
 
 // zapis wynikow w plik
 void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *name);
+int toReadFile (char *fileName, char *text, char *key);
