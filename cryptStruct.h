@@ -6,10 +6,10 @@
 #include <string.h>
 
 // nie wiem co to, utworzylo IDE :)
-#ifndef NEW_VARIABLES_H
-#define NEW_VARIABLES_H
-
-#endif //NEW_VARIABLES_H
+//#ifndef NEW_VARIABLES_H
+//#define NEW_VARIABLES_H
+//
+//#endif //NEW_VARIABLES_H
 
 
 #define TEXTBUFFER 250
@@ -74,6 +74,7 @@ struct Session {
 
 //dodatkowe funkcji
 void free2D(int **matrix, int size);
+//
 void printText(char *name, char *text, int length);
 void printMatrix(char *name, int **matrix, int size);
 

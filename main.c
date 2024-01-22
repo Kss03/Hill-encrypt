@@ -1,12 +1,15 @@
 #include "cryptStruct.c"
 
-
+// dwie podstawowe operacje
+// opisujące szyfrowanie i deszyfrowanie tekstu
+// zdefiniowany pod mainem
 void encryptMessage();
 void decryptMessage();
 
 int main() {
   int operation;
   while(1) {
+    // odczytywanie komandy z wiersza poleceń
     operation = menu();
 
     if (operation == 1) encryptMessage();
@@ -25,9 +28,11 @@ void encryptMessage() {
 
   char message[] = "\nWprowadz text (litery Aa-Zz): ";
   char message2[] = "\nWprowadz nazwe pliku (np. text.txt): ";
-  msg.inputText = typeMessage(message);
-  keys.size = typeKey();
-  session.fileName = typeMessage(message2);
+
+  msg.inputText = typeMessage(message); //tekst
+  keys.size = typeKey(); //rozmiar klucza
+  session.fileName = typeMessage(message2); //nazwa pliku
+  // przekształcenie tekstu do przeliczeń
   msg.length = textLength(msg.inputText, keys.size);
   msg.textDigRep = convertTextToNum(msg.inputText, msg.length);
   //generujemy klucz
@@ -74,10 +79,11 @@ void decryptMessage() {
   // 0 - plik nie istnieje, 1 - OK, 2 - EXIT
   int isFileExist;
 
+  // przydzielamy pamięć dla zmiennych
   msg.inputText = malloc(TEXTBUFFER * sizeof(char));
   keys.keyTextRep = malloc(TEXTBUFFER * sizeof(char));
   session.fileName = typeMessage("\nWprowadz nazwe pliku (np. text.txt) albo exit aby przerwac program: ");
-  if (strcmp(session.fileName, "exit") == 0) return;
+  if (strcmp(session.fileName, "exit") == 0) return; // jezeli "exit" - wstrymamy program
   printf_s(session.fileName);
   isFileExist = toReadFile(session.fileName, msg.inputText, keys.keyTextRep);
 

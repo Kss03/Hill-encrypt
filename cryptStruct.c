@@ -1,15 +1,18 @@
 #include "cryptStruct.h"
 
+// zwolnienie pamięci
 void free2D(int **matrix, int size) {
   for( int i = 0; i < size; i++) free(matrix[i]);
   free(matrix);
 }
+// print dla lancucha
 void printText(char *name, char *text, int length) {
   puts("\n*******************");
   printf_s("%s:: ", name);
   for (int i = 0; i < length; i++) printf_s("%c", text[i]);
   printf_s("\n*******************");
 }
+// print dla macierzy
 void printMatrix(char *name, int **matrix, int size) {
   printf_s("\n***************** %s ******************\n", name);
   for (int i = 0; i < size; i++) {
@@ -20,6 +23,7 @@ void printMatrix(char *name, int **matrix, int size) {
   }
 }
 
+//funkcji zialan
 int menu () {
   char input[TEXTBUFFER];
   printf_s("\nCo chcialbys zrobic?");
@@ -46,19 +50,21 @@ int typeKey () {
   return output;
 }
 
-//dLugośc tekstu dopasowana do wymiaru klucza
+//dLugośc tekstu dopasowana do rozmiaru klucza
 int textLength(char *text, int size) {
   int len = (int)strlen(text);
   if (len % size == 0) return len;
   len = ((int)len / (int)size) * size + size;
   return len;
 }
+// zwraca ustalony w zmiennych numer litery
 int letToNum(char letter) {
   for (int i = 0; i < ALPHLENGTH; i++) {
     if (letter == ALPHKEYS[i][0] || letter == ALPHKEYS[i][1]) return ALPHKEYS[i][2];
   }
   return (ALPHLENGTH-1);
 }
+// odwrotnie, przyjmuje numer, zwraca duzą litere
 char numToLet(int letKey) {
   for (int i = 0; i < ALPHLENGTH; i++) {
     if (letKey == ALPHKEYS[i][2]) {
@@ -67,6 +73,7 @@ char numToLet(int letKey) {
   }
   return (ALPHKEYS[ALPHLENGTH-1][0]);
 }
+//rozszerzenie wuch powyszych funkcji dla przetrwarzania calego lańcucha
 int * convertTextToNum(char *text, int length) {
   int *textNum = malloc(length * sizeof(int));
   for (int i = 0; i < length; i++) textNum[i] = letToNum(text[i]);
@@ -77,6 +84,7 @@ char * convertNumToText(int *numArr, int length) {
   for (int i = 0; i < length; i++) text[i] = numToLet(numArr[i]);
   return text;
 }
+// przekształceie macierzy dwuwymiarowej w lńcuch dlawygodniejszego zapisu  plik i odwrotnie
 int * convertMatrixToChain(int **key, int size) {
   int *chain = malloc(size * size * sizeof(int));
   for (int i = 0; i < size; i++) {
@@ -118,6 +126,7 @@ int * textCrypter(int **key, int keySize, int *inpText, int textLength) {
   }
   return text;
 }
+// losowe generuje macierz z wartościami dopasowanymi do wyiaru alfabetu
 int ** matrixGenerator(int size) {
   int **key;
   int random;
@@ -134,6 +143,8 @@ int ** matrixGenerator(int size) {
 
   return key;
 }
+// liczy wyznacznik w wymiarach od 2 i wyzej poprzez metodą Laplace’a i Sarrusa
+// funkcja rekursywna
 int determinant(int **key, int size) {
   // liczymy wyznacznik dla macierzy
   if (size == 2) {
@@ -196,6 +207,7 @@ int determinant(int **key, int size) {
     return detOut;
   }
 }
+// dla uiknięcia ulamkow liczymy wyznacznik odwrotny
 int inverseDeterminant(int **key, int size) {
   int det = determinant(key, size);
   if (det <= 0) return 0;
@@ -213,6 +225,9 @@ int inverseDeterminant(int **key, int size) {
   }
   return inverseDet;
 }
+// ogolna funkcja lącząca w sobie poprzednie
+// generuje i sprawdza macierzy dopóki nie dostaniemy macierz
+// dla której możemy wyznaczyć macierz odwrotną
 int ** keyGenerator(int size) {
   int inverseDet = 0;
   int **key;
@@ -223,7 +238,7 @@ int ** keyGenerator(int size) {
   while(inverseDet == 0);
   return key;
 }
-//funkcja liczy macierz odwrotną
+// liczy macierz "dopełień algebraicznych" potrzebną do liczenia macierzy odwrotnej
 int **algebraicComplementMatrix (int **matrix, int size) {
   int ** complementMatrix = (int**)malloc(size * sizeof(int*));
   for (int i = 0; i < size; i++) {
@@ -267,6 +282,7 @@ int **algebraicComplementMatrix (int **matrix, int size) {
   free2D(matrixB, smallerSize);
   return complementMatrix;
 }
+// operacja "transponowana" macierzy
 int ** transposition (int **matrix, int size) {
   int newMatrix[size][size];
   for (int i = 0; i < size; i++) {
@@ -283,6 +299,7 @@ int ** transposition (int **matrix, int size) {
   }
   return matrix;
 }
+//funkcja liczy macierz odwrotną
 int **findDecryptKey(int **key, int size) {
   int ** decKey;
   int inverseDet = inverseDeterminant(key, size);
@@ -296,6 +313,7 @@ int **findDecryptKey(int **key, int size) {
   return decKey;
 }
 
+// zapis zaodowanego tekstu i klucza w plik
 void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *name) {
   int let;
   FILE *file = fopen(name, "w");
@@ -310,6 +328,7 @@ void toSaveTextAndKey(char *text, int textLength, char *key, int keySize, char *
   }
   fclose(file);
 }
+// odczytywanie pliku z tzakodowanym tekstem i kluczem
 int toReadFile (char *fileName, char *text, char *key) {
   char line[TEXTBUFFER];
   FILE *file = fopen(fileName, "r");
